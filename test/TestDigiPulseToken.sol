@@ -20,7 +20,7 @@ contract TestDigiPulseToken {
 
     // uint expected = 1105625000;
     uint expected = 0;
-    address first = 0xce5f9f216580878f0370fc762564b059afe61b13;
+    address first = 0x663F98e9c37B9bbA460d4d80ca48ef039eAE4052;
 
     Assert.equal(meta.getBalance(first), expected, "First contributor should have 0 DGT since it was raised in pre-sale");
   }
