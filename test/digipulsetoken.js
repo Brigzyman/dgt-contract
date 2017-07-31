@@ -55,44 +55,7 @@ contract('DigiPulseToken', function(accounts) {
 
     }).then(function(balance) {
       account_one_ending_balance = balance.toNumber();
-
-      assert.equal(account_one_ending_balance, amount * 250 * 1.15 * 10e8, "Amount wasn't correctly calculated from the sender");
+      assert.equal(account_one_ending_balance, amount * 1e8 * 250 * 1.15, "Amount wasn't correctly calculated from the sender");
     });
   });
-
-  // it("should send coin correctly", function() {
-  //   var meta;
-
-  //   // Get initial balances of first and second account.
-  //   var account_one = accounts[0];
-  //   var account_two = accounts[1];
-
-  //   var account_one_starting_balance;
-  //   var account_two_starting_balance;
-  //   var account_one_ending_balance;
-  //   var account_two_ending_balance;
-
-  //   var amount = 10;
-
-  //   return DigiPulseToken.deployed().then(function(instance) {
-  //     meta = instance;
-  //     return meta.getBalance.call(account_one);
-  //   }).then(function(balance) {
-  //     account_one_starting_balance = balance.toNumber();
-  //     return meta.getBalance.call(account_two);
-  //   }).then(function(balance) {
-  //     account_two_starting_balance = balance.toNumber();
-  //     return meta.transfer(account_two, amount, {from: account_one});
-  //   }).then(function() {
-  //     return meta.getBalance.call(account_one);
-  //   }).then(function(balance) {
-  //     account_one_ending_balance = balance.toNumber();
-  //     return meta.getBalance.call(account_two);
-  //   }).then(function(balance) {
-  //     account_two_ending_balance = balance.toNumber();
-
-  //     assert.equal(account_one_ending_balance, account_one_starting_balance - amount, "Amount wasn't correctly taken from the sender");
-  //     assert.equal(account_two_ending_balance, account_two_starting_balance + amount, "Amount wasn't correctly sent to the receiver");
-  //   });
-  // });
 });

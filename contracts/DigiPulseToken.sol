@@ -41,19 +41,44 @@ contract DigiPulseToken {
 
     // Do not allow creating 0 or more than the available tokens.
     if (msg.value == 0) revert();
-    uint amountInDgt = msg.value / 10e8 * dgtRatioToEth;
-    if (amountInDgt > tokenSupply - allocatedSupply) revert();
-
-    // TODO add custom tier logic
 
     // Must adjust number of decimals, so the ratio will work as expected
     // From ETH 16 decimals to DGT 8 decimals
-    uint numTokens = msg.value / 10e8 * dgtRatioToEth;
-    allocatedSupply += numTokens;
+    uint dgtAmount = msg.value / 10e8 * dgtRatioToEth;
+    if (dgtAmount > tokenSupply - allocatedSupply) revert();
+
+    // Tier bonus calculations
+    uint dgtWithBonus;
+    uint256 applicable_for_tier;
+
+    for (uint8 i = 0; i < 4; i++) {
+      uint256 tier_amount = 3275000 * 10e8;
+      Transfer(0, msg.sender, tier_amount);
+      uint8 tier_bonus = 115 - (i * 5);
+      applicable_for_tier += tier_amount;
+
+      // We are skipping over this tier, since it is filled already
+      if (allocatedSupply >= applicable_for_tier) continue;
+      if (dgtAmount == 0) break;
+
+      // Cases when part of the pledge is covering two tiers
+      int256 diff = int(allocatedSupply) + int(dgtAmount - applicable_for_tier);
+
+      if (diff > 0) {
+        dgtWithBonus += (dgtAmount - uint(diff)) * tier_bonus / 100;
+        dgtAmount = uint(diff);
+      } else {
+        dgtWithBonus += dgtAmount * tier_bonus / 100;
+        dgtAmount = 0;
+      }
+    }
+
+    // Increase supply
+    allocatedSupply += dgtWithBonus;
 
     // Assign new tokens to the sender and log token creation event
-    balanceOf[msg.sender] += numTokens;
-    Transfer(0, msg.sender, numTokens);
+    balanceOf[msg.sender] += dgtWithBonus;
+    Transfer(0, msg.sender, tier_bonus);
   }
 
   // For future transfers of DGT
