@@ -16,11 +16,10 @@ contract DigiPulseToken {
   uint constant tokenSupply = 16125000 * 10e8;
   uint8 constant dgtRatioToEth = 250;
   uint constant startOfIco = 1501833600; // 08/04/2017 @ 8:00am (UTC)
-  uint constant endOfIco = 1504223999; // 08/04/2017 @ 8:00am (UTC)
-  uint allocatedSupply = 0;
-
-  // Presale
+  uint constant endOfIco = 1504223999; // 08/31/2017 @ 23:59pm (UTC)
   uint constant raisedInPresale = 961735343125;
+
+  uint allocatedSupply = 0;
   bool icoFailed = false;
   bool icoFulfilled = false;
 
@@ -28,13 +27,14 @@ contract DigiPulseToken {
 	event Transfer(address indexed from, address indexed to, uint256 value);
   event Refund(address indexed _from, uint256 _value);
 
+  // No special actions are required upon creation, so initialiser is left empty
   function DigiPulseToken() {
-    // ... ?
+    // Nothing here.
   }
 
   // logic which converts eth to dgt and stores in allocatedSupply
   // TODO
-  function create() payable external {
+  function contribute() payable external {
     // Abort if crowdfunding has reached an end
     if (icoFailed) revert();
     if (icoFulfilled) revert();
@@ -51,10 +51,8 @@ contract DigiPulseToken {
     uint numTokens = msg.value / 10e8 * dgtRatioToEth;
     allocatedSupply += numTokens;
 
-    // Assign new tokens to the sender
+    // Assign new tokens to the sender and log token creation event
     balanceOf[msg.sender] += numTokens;
-
-    // Log token creation event
     Transfer(0, msg.sender, numTokens);
   }
 
