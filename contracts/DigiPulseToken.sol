@@ -35,7 +35,9 @@ contract DigiPulseToken {
   }
 
   // logic which converts eth to dgt and stores in allocatedSupply
-  // TODO
+  // TODO check if sent more than "tokenSupply"
+  // TODO check if icoFailed
+  // TODO check if icoFulfilled
   function contribute() payable external {
     // Abort if crowdfunding has reached an end
     if (icoFailed) revert();
@@ -105,6 +107,8 @@ contract DigiPulseToken {
   // Decide the state of the project
   // TODO Test that it throws when it is too early
   // TODO Test that it works when time has come or when goal reached
+  // TODO Test if presale added
+  // TODO Test if bounties added
   function finalize() external {
     if (icoFailed) revert();
     if (icoFulfilled) revert();
