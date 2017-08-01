@@ -16,9 +16,11 @@ contract DigiPulseToken {
   // Max available supply is 16581633 * 1e8 (incl. 100000 presale and 2% bounties)
   uint constant tokenSupply = 16125000 * 1e8;
   uint8 constant dgtRatioToEth = 250;
+  uint constant raisedInPresale = 961735343125;
+
+  // For LIVE
   uint constant startOfIco = 1501833600; // 08/04/2017 @ 8:00am (UTC)
   uint constant endOfIco = 1504223999; // 08/31/2017 @ 23:59pm (UTC)
-  uint constant raisedInPresale = 961735343125;
 
   uint allocatedSupply = 0;
   uint allocatedEthSupply = 0;
@@ -40,6 +42,8 @@ contract DigiPulseToken {
   // TODO check if icoFulfilled
   function contribute() payable external {
     // Abort if crowdfunding has reached an end
+    if (now < startOfIco) revert();
+    if (now > endOfIco) revert();
     if (icoFailed) revert();
     if (icoFulfilled) revert();
 
@@ -109,13 +113,13 @@ contract DigiPulseToken {
   // TODO Test that it works when time has come or when goal reached
   // TODO Test if presale added
   // TODO Test if bounties added
-  function finalize() external {
+  function finalise() external {
     if (icoFailed) revert();
     if (icoFulfilled) revert();
     if (now < endOfIco && allocatedSupply != tokenSupply) revert();
 
     // Min cap is 8000 ETH
-    if (allocatedEthSupply < 8000 ether) {
+    if (allocatedEthSupply < 8000 * 1e16) {
       icoFailed = true;
     } else {
       setPreSaleAmounts();
@@ -137,8 +141,8 @@ contract DigiPulseToken {
     allocatedEthSupply -= ethValue;
 
     // Refund original Ether amount
-    Refund(msg.sender, ethValue);
     if (!msg.sender.send(ethValue)) revert();
+    Refund(msg.sender, ethValue);
   }
 
   // Returns balance raised in ETH from specific address
@@ -170,17 +174,16 @@ contract DigiPulseToken {
   // Since some of the wallets in pre-sale were on exchanges, we transfer tokens
   // to account which will send tokens manually out
 	function setPreSaleAmounts() private {
-    balanceOf[0x663F98e9c37B9bbA460d4d80ca48ef039eAE4052] += raisedInPresale;
-    Transfer(0, 0x663F98e9c37B9bbA460d4d80ca48ef039eAE4052, raisedInPresale);
-
+    balanceOf[0x8776A6fA922e65efcEa2371692FEFE4aB7c933AB] += raisedInPresale;
     allocatedSupply += raisedInPresale;
+    Transfer(0, 0x8776A6fA922e65efcEa2371692FEFE4aB7c933AB, raisedInPresale);
 	}
 
 	// Bounty pool makes up 2% from all tokens bought
 	function allocateBountyTokens() private {
-    var bountyAmount = allocatedSupply / 98 * 2;
+    uint256 bountyAmount = allocatedSupply * 100 / 98 * 2 / 100;
 		balanceOf[0x663F98e9c37B9bbA460d4d80ca48ef039eAE4052] += bountyAmount;
-    Transfer(0, 0x663F98e9c37B9bbA460d4d80ca48ef039eAE4052, bountyAmount);
     allocatedSupply += bountyAmount;
+    Transfer(0, 0x663F98e9c37B9bbA460d4d80ca48ef039eAE4052, bountyAmount);
 	}
 }

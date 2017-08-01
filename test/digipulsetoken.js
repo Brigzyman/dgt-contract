@@ -32,10 +32,13 @@ contract('DigiPulseToken', function(accounts) {
     });
   });
 
-
   it("should be able to calculate DGT in multiple tiers", function() {
-    var meta;
+    // Skip to future, when ICO is live
+    web3.currentProvider.sendAsync({
+      jsonrpc: "2.0", method: "evm_increaseTime", params: [86400 * 5]
+    }, function() { });
 
+    var meta;
     var account = accounts[0];
     var account_ending_balance;
 
@@ -61,7 +64,6 @@ contract('DigiPulseToken', function(accounts) {
       assert.equal(balance.toNumber(), 3793750 * 1e8, "Wrong amount of DGT is listed for the address.");
     });
   });
-
 
   it("should be able to send ETH and receive DGT with 10% bonus", function() {
     var meta;
@@ -99,7 +101,6 @@ contract('DigiPulseToken', function(accounts) {
     });
   });
 
-
   it("should return remaining supply in DGT", function() {
     var meta;
 
@@ -116,7 +117,6 @@ contract('DigiPulseToken', function(accounts) {
 
     });
   });
-
 
   it("should return raised amount in DGT", function() {
     var meta;
@@ -135,7 +135,6 @@ contract('DigiPulseToken', function(accounts) {
     });
   });
 
-
   it("should return raised amount in ETH", function() {
     var meta;
 
@@ -150,6 +149,50 @@ contract('DigiPulseToken', function(accounts) {
       raised = balance.toNumber();
       assert.equal(raised, eth_amount * 1e16, "Wrong amount raised.");
 
+    });
+  });
+
+  it("shouldn't allow execution since ICO is not over and goal is not reached", function() {
+    var meta;
+    var response;
+
+    return DigiPulseToken.deployed().then(function(instance) {
+      meta = instance;
+      return meta.finalise();
+
+    }).then(function(returnValue) {
+      assert(false, "finalise() was supposed to revert() but didn't");
+
+    }).catch(function(error) {
+      // Revert() received;
+    });
+  });
+
+  it("shouldn't be able to refund and finalise ICO", function() {
+    // Skip to future, when ICO has ended
+    web3.currentProvider.sendAsync({
+      jsonrpc: "2.0", method: "evm_increaseTime", params: [86400 * 30]
+    }, function() { });
+
+    var meta;
+    var presale;
+
+    return DigiPulseToken.deployed().then(function(instance) {
+      meta = instance;
+      return meta.finalise();
+
+    }).then(function(response) {
+      return meta.getBalance.call('0x8776A6fA922e65efcEa2371692FEFE4aB7c933AB');
+
+    }).then(function(balance) {
+      presale = balance.toNumber();
+      total_raised += presale;
+      assert.equal(presale, 961735343125, "PreSale amount was not added to the ledger");
+      return meta.getBalance.call('0x663F98e9c37B9bbA460d4d80ca48ef039eAE4052');
+
+    }).then(function(balance) {
+      var bounties = balance.toNumber();
+      assert.equal(bounties, parseInt(total_raised / 98 * 2), "Bounty pool is not calculated correctly");
     });
   });
 });
