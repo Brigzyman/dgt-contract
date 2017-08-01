@@ -12,8 +12,8 @@ contract DigiPulseToken {
   // Array with all balances and sypply data
   mapping (address => uint256) public balanceOf;
 
-  // Max available supply is 16581633 * 10e8 (incl. 100000 presale and 2% bounties)
-  uint constant tokenSupply = 16125000 * 10e8;
+  // Max available supply is 16581633 * 1e8 (incl. 100000 presale and 2% bounties)
+  uint constant tokenSupply = 16125000 * 1e8;
   uint8 constant dgtRatioToEth = 250;
   uint constant startOfIco = 1501833600; // 08/04/2017 @ 8:00am (UTC)
   uint constant endOfIco = 1504223999; // 08/31/2017 @ 23:59pm (UTC)
@@ -44,28 +44,33 @@ contract DigiPulseToken {
 
     // Must adjust number of decimals, so the ratio will work as expected
     // From ETH 16 decimals to DGT 8 decimals
-    uint dgtAmount = msg.value / 10e8 * dgtRatioToEth;
+    uint256 dgtAmount = msg.value / 1e8 * dgtRatioToEth;
     if (dgtAmount > tokenSupply - allocatedSupply) revert();
 
     // Tier bonus calculations
-    uint dgtWithBonus;
+    uint256 dgtWithBonus;
     uint256 applicable_for_tier;
 
     for (uint8 i = 0; i < 4; i++) {
-      uint256 tier_amount = 3275000 * 10e8;
-      Transfer(0, msg.sender, tier_amount);
+      // Each tier has same amount of DGT
+      uint256 tier_amount = 3275000 * 1e8;
+      // Every next tier has 5% less bonus pool
       uint8 tier_bonus = 115 - (i * 5);
       applicable_for_tier += tier_amount;
 
-      // We are skipping over this tier, since it is filled already
+      // Skipping over this tier, since it is filled already
       if (allocatedSupply >= applicable_for_tier) continue;
+
+      // Reached this tier with 0 amount, so abort
       if (dgtAmount == 0) break;
 
-      // Cases when part of the pledge is covering two tiers
+      // Cases when part of the contribution is covering two tiers
       int256 diff = int(allocatedSupply) + int(dgtAmount - applicable_for_tier);
 
       if (diff > 0) {
-        dgtWithBonus += (dgtAmount - uint(diff)) * tier_bonus / 100;
+        // add bonus for current tier and strip the difference for
+        // calculation in the next tier
+        dgtWithBonus += uint(int(dgtAmount) - diff) * tier_bonus / 100;
         dgtAmount = uint(diff);
       } else {
         dgtWithBonus += dgtAmount * tier_bonus / 100;
@@ -78,7 +83,7 @@ contract DigiPulseToken {
 
     // Assign new tokens to the sender and log token creation event
     balanceOf[msg.sender] += dgtWithBonus;
-    Transfer(0, msg.sender, tier_bonus);
+    Transfer(0, msg.sender, dgtWithBonus);
   }
 
   // For future transfers of DGT
@@ -100,7 +105,8 @@ contract DigiPulseToken {
     if (icoFulfilled) revert();
     if (now < endOfIco && allocatedSupply != tokenSupply) revert();
 
-    if (allocatedSupply / dgtRatioToEth < 6000 ether) {
+    // Min cap is 8000 ETH
+    if (allocatedSupply / dgtRatioToEth * 1e8 < 8000 ether) {
       icoFailed = true;
     } else {
       setPreSaleAmounts();
@@ -123,7 +129,7 @@ contract DigiPulseToken {
     // Get the number of ether and remove bonus added from the first tier,
     // since refund is not possible once the first tier has closed and
     // additional decimals are added, so it matches initial amount
-    var ethValue = dgtValue / dgtRatioToEth * 10e8 / 115 * 100;
+    var ethValue = dgtValue / dgtRatioToEth * 1e8 / 115 * 100;
     Refund(msg.sender, ethValue);
     if (!msg.sender.send(ethValue)) revert();
   }

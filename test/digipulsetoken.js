@@ -2,6 +2,8 @@ var DigiPulseToken = artifacts.require("./DigiPulseToken.sol");
 
 contract('DigiPulseToken', function(accounts) {
 
+  var total_raised = 0;
+
   it("should return 0 raised after creation of contract", function() {
     return DigiPulseToken.deployed().then(function(instance) {
       return instance.getRaised.call();
@@ -30,32 +32,58 @@ contract('DigiPulseToken', function(accounts) {
   });
 
 
-  it("should be able to send ETH and receive DGT with 15% bonus", function() {
+  it("should be able to calculate DGT in multiple tiers", function() {
     var meta;
 
-    // Get initial balances of first and second account.
-    var account_one = accounts[0];
-    var account_one_starting_balance;
-    var account_one_ending_balance;
+    var account = accounts[0];
+    var account_ending_balance;
+
+    // First tier filled + 100 ETH in second tier
+    // 3275000 DGT / 250 Ratio = 13100 ETH
+    var amount = 13100 + 100;
+
+    return DigiPulseToken.deployed().then(function(instance) {
+      meta = instance;
+      meta.contribute({ from: account, value: amount * 1e16 });
+
+    }).then(function() {
+      return meta.getBalance.call(account);
+
+    }).then(function(balance) {
+      account_ending_balance = balance.toNumber();
+      assert.equal(account_ending_balance, 3793750 * 1e8, "Amount wasn't correctly calculated from the sender");
+      return meta.getBalance.call(account);
+
+    }).then(function(balance) {
+      total_raised += account_ending_balance;
+      assert.equal(account_ending_balance, 3793750 * 1e8, "Amount raised is not correct");
+    });
+  });
+
+
+  it("should be able to send ETH and receive DGT with 10% bonus", function() {
+    var meta;
+
+    var account = accounts[0];
+    var account_ending_balance;
 
     var amount = 10;
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      return meta.getBalance.call(account_one);
-
-    }).then(function(balance) {
-      account_one_starting_balance = balance.toNumber();
+      meta.contribute({ from: account, value: amount * 1e16 });
 
     }).then(function() {
-      meta.contribute({ from: account_one, value: amount * 10e16 });
-
-    }).then(function() {
-      return meta.getBalance.call(account_one);
+      return meta.getBalance.call(account);
 
     }).then(function(balance) {
-      account_one_ending_balance = balance.toNumber();
-      assert.equal(account_one_ending_balance, amount * 1e8 * 250 * 1.15, "Amount wasn't correctly calculated from the sender");
+      account_ending_balance = balance.toNumber();
+      assert.equal(account_ending_balance, total_raised + amount * 1e8 * 250 * 1.10, "Amount wasn't correctly calculated from the sender");
+      return meta.getRaised.call();
+
+    }).then(function(balance) {
+      assert.equal(balance, total_raised + amount * 1e8 * 250 * 1.10, "Amount raised is not correct");
+      total_raised += balance;
     });
   });
 });

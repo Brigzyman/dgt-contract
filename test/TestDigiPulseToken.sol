@@ -9,7 +9,7 @@ contract TestDigiPulseToken {
   function testInitialBalanceUsingDeployedContract() {
     DigiPulseToken meta = DigiPulseToken(DeployedAddresses.DigiPulseToken());
 
-    uint expected = 16125000 * 10e8;
+    uint expected = 16125000 * 1e8;
 
     Assert.equal(meta.getSupply(), expected, "Contract should have 16125000 DigiPulseToken available initially");
   }
