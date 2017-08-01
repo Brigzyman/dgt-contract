@@ -8,15 +8,15 @@ contract DigiPulseToken {
   string public constant name = "DigiPulse Token";
   string public constant symbol = "DGT";
   uint8 public constant decimals = 8;
-
-  // Array with all balances and sypply data
   mapping (address => uint256) public balanceOf;
-  mapping (address => uint256) internal ethBalanceOf;
+
+
 
   // Max available supply is 16581633 * 1e8 (incl. 100000 presale and 2% bounties)
   uint constant tokenSupply = 16125000 * 1e8;
   uint8 constant dgtRatioToEth = 250;
   uint constant raisedInPresale = 961735343125;
+  mapping (address => uint256) ethBalanceOf;
 
   // For LIVE
   uint constant startOfIco = 1501833600; // 08/04/2017 @ 8:00am (UTC)
@@ -30,10 +30,23 @@ contract DigiPulseToken {
   // Generate public event that will notify clients
 	event Transfer(address indexed from, address indexed to, uint256 value);
   event Refund(address indexed _from, uint256 _value);
+  event Log(uint256 _value);
 
   // No special actions are required upon creation, so initialiser is left empty
   function DigiPulseToken() {
     // Nothing here.
+  }
+
+  // For future transfers of DGT
+  // TODO Test
+  function transfer(address _to, uint256 _value) {
+    if (balanceOf[msg.sender] < _value) revert();           // Check if the sender has enough
+    if (balanceOf[_to] + _value < balanceOf[_to]) revert(); // Check for overflows
+
+    balanceOf[msg.sender] -= _value;                        // Subtract from the sender
+    balanceOf[_to] += _value;                               // Add the same to the recipient
+
+    Transfer(msg.sender, _to, _value);
   }
 
   // logic which converts eth to dgt and stores in allocatedSupply
@@ -96,30 +109,14 @@ contract DigiPulseToken {
     Transfer(0, msg.sender, dgtWithBonus);
   }
 
-  // For future transfers of DGT
-  // TODO Test
-  function transfer(address _to, uint256 _value) {
-    if (balanceOf[msg.sender] < _value) revert();           // Check if the sender has enough
-    if (balanceOf[_to] + _value < balanceOf[_to]) revert(); // Check for overflows
-
-    balanceOf[msg.sender] -= _value;                        // Subtract from the sender
-    balanceOf[_to] += _value;                               // Add the same to the recipient
-
-    Transfer(msg.sender, _to, _value);
-  }
-
   // Decide the state of the project
-  // TODO Test that it throws when it is too early
-  // TODO Test that it works when time has come or when goal reached
-  // TODO Test if presale added
-  // TODO Test if bounties added
   function finalise() external {
     if (icoFailed) revert();
     if (icoFulfilled) revert();
     if (now < endOfIco && allocatedSupply != tokenSupply) revert();
 
     // Min cap is 8000 ETH
-    if (allocatedEthSupply < 8000 * 1e16) {
+    if (allocatedEthSupply < uint256(8000 * 1e16)) {
       icoFailed = true;
     } else {
       setPreSaleAmounts();
@@ -130,8 +127,6 @@ contract DigiPulseToken {
 
   // If the goal is not reached till the end of the ICO
   // allow refunds
-  // TODO Test that it reverts() when it is too early
-  // TODO Test that it refunds when goal has not been reached
   function refundEther() external {
   	if (!icoFailed) revert();
 
@@ -141,7 +136,7 @@ contract DigiPulseToken {
     allocatedEthSupply -= ethValue;
 
     // Refund original Ether amount
-    if (!msg.sender.send(ethValue)) revert();
+    msg.sender.transfer(ethValue);
     Refund(msg.sender, ethValue);
   }
 
