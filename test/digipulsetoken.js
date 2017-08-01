@@ -58,25 +58,7 @@ contract('DigiPulseToken', function(accounts) {
 
     }).then(function(balance) {
       total_raised += balance.toNumber();
-      assert.equal(balance.toNumber(), 3793750 * 1e8, "Amount raised is not correct");
-    });
-  });
-
-
-  it("should reflect the correct raised amount in ETH", function() {
-    var meta;
-
-    var account = accounts[0];
-    var account_balance;
-
-    return DigiPulseToken.deployed().then(function(instance) {
-      meta = instance;
-      return meta.getBalanceInEth.call(account);
-
-    }).then(function(balance) {
-      account_balance = balance.toNumber();
-      assert.equal(account_balance, eth_amount * 1e16, "Wrong amount of ETH is available for the account.");
-
+      assert.equal(balance.toNumber(), 3793750 * 1e8, "Wrong amount of DGT is listed for the address.");
     });
   });
 
@@ -84,10 +66,11 @@ contract('DigiPulseToken', function(accounts) {
   it("should be able to send ETH and receive DGT with 10% bonus", function() {
     var meta;
 
-    var account = accounts[0];
+    var account = accounts[1];
     var account_ending_balance;
 
     var amount = 10;
+    eth_amount += amount;
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
@@ -98,12 +81,75 @@ contract('DigiPulseToken', function(accounts) {
 
     }).then(function(balance) {
       account_ending_balance = balance.toNumber();
-      assert.equal(account_ending_balance, total_raised + amount * 1e8 * 250 * 1.10, "Amount wasn't correctly calculated from the sender");
+      assert.equal(account_ending_balance, amount * 1e8 * 250 * 1.10, "Wrong amount of DGT is listed for the address.");
+      total_raised += account_ending_balance;
       return meta.getRaised.call();
 
     }).then(function(balance) {
-      assert.equal(balance, total_raised + amount * 1e8 * 250 * 1.10, "Amount raised is not correct");
-      total_raised += balance;
+      balance = balance.toNumber();
+      assert.equal(balance, total_raised, "Amount raised is not correct");
+
+      return meta.getBalanceInEth.call(account);
+
+    }).then(function(balance) {
+      account_balance = balance.toNumber();
+      assert.equal(account_balance, amount * 1e16, "Wrong amount of ETH is available for the address.");
+
+      return meta.getBalance.call(account);
+    });
+  });
+
+
+  it("should return remaining supply in DGT", function() {
+    var meta;
+
+    var account = accounts[0];
+    var account_balance;
+
+    return DigiPulseToken.deployed().then(function(instance) {
+      meta = instance;
+      return meta.getRemainingSupply.call();
+
+    }).then(function(balance) {
+      supply = balance.toNumber();
+      assert.equal(supply, 16125000 * 1e8 - total_raised, "Wrong amount of supply is left.");
+
+    });
+  });
+
+
+  it("should return raised amount in DGT", function() {
+    var meta;
+
+    var account = accounts[0];
+    var account_balance;
+
+    return DigiPulseToken.deployed().then(function(instance) {
+      meta = instance;
+      return meta.getRaised.call();
+
+    }).then(function(balance) {
+      raised = balance.toNumber();
+      assert.equal(raised, total_raised, "Wrong amount raised.");
+
+    });
+  });
+
+
+  it("should return raised amount in ETH", function() {
+    var meta;
+
+    var account = accounts[0];
+    var account_balance;
+
+    return DigiPulseToken.deployed().then(function(instance) {
+      meta = instance;
+      return meta.getRaisedEth.call();
+
+    }).then(function(balance) {
+      raised = balance.toNumber();
+      assert.equal(raised, eth_amount * 1e16, "Wrong amount raised.");
+
     });
   });
 });

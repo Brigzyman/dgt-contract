@@ -11,7 +11,7 @@ contract TestDigiPulseToken {
 
     uint expected = 16125000 * 1e8;
 
-    Assert.equal(meta.getSupply(), expected, "Contract should have 16125000 DigiPulseToken available initially");
+    Assert.equal(meta.getRemainingSupply(), expected, "Contract should have 16125000 DigiPulseToken available initially");
   }
 
 

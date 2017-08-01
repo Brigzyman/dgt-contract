@@ -138,31 +138,26 @@ contract DigiPulseToken {
   }
 
   // Returns balance raised in ETH from specific address
-  // TODO Test
 	function getBalanceInEth(address addr) returns(uint){
 		return ethBalanceOf[addr];
 	}
 
 	// Returns balance raised in DGT from specific address
-	// TODO Test
 	function getBalance(address addr) returns(uint) {
 		return balanceOf[addr];
 	}
 
 	// Get remaining supply of DGT
-	// TODO Test
-	function getSupply() returns(uint) {
-		return tokenSupply;
+	function getRemainingSupply() returns(uint) {
+		return tokenSupply - allocatedSupply;
 	}
 
   // Get raised amount during ICO
-  // TODO Test
   function getRaised() returns(uint) {
     return allocatedSupply;
   }
 
 	// Get raised amount during ICO
-	// TODO Test
 	function getRaisedEth() returns(uint) {
 		return allocatedEthSupply;
 	}
