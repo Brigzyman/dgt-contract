@@ -3,6 +3,7 @@ var DigiPulseToken = artifacts.require("./DigiPulseToken.sol");
 contract('DigiPulseToken', function(accounts) {
 
   var total_raised = 0;
+  var eth_amount = 0;
 
   it("should return 0 raised after creation of contract", function() {
     return DigiPulseToken.deployed().then(function(instance) {
@@ -41,6 +42,7 @@ contract('DigiPulseToken', function(accounts) {
     // First tier filled + 100 ETH in second tier
     // 3275000 DGT / 250 Ratio = 13100 ETH
     var amount = 13100 + 100;
+    eth_amount += 13100 + 100;
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
@@ -55,8 +57,26 @@ contract('DigiPulseToken', function(accounts) {
       return meta.getBalance.call(account);
 
     }).then(function(balance) {
-      total_raised += account_ending_balance;
-      assert.equal(account_ending_balance, 3793750 * 1e8, "Amount raised is not correct");
+      total_raised += balance.toNumber();
+      assert.equal(balance.toNumber(), 3793750 * 1e8, "Amount raised is not correct");
+    });
+  });
+
+
+  it("should reflect the correct raised amount in ETH", function() {
+    var meta;
+
+    var account = accounts[0];
+    var account_balance;
+
+    return DigiPulseToken.deployed().then(function(instance) {
+      meta = instance;
+      return meta.getBalanceInEth.call(account);
+
+    }).then(function(balance) {
+      account_balance = balance.toNumber();
+      assert.equal(account_balance, eth_amount * 1e16, "Wrong amount of ETH is available for the account.");
+
     });
   });
 

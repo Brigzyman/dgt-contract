@@ -11,6 +11,7 @@ contract DigiPulseToken {
 
   // Array with all balances and sypply data
   mapping (address => uint256) public balanceOf;
+  mapping (address => uint256) internal ethBalanceOf;
 
   // Max available supply is 16581633 * 1e8 (incl. 100000 presale and 2% bounties)
   uint constant tokenSupply = 16125000 * 1e8;
@@ -20,6 +21,7 @@ contract DigiPulseToken {
   uint constant raisedInPresale = 961735343125;
 
   uint allocatedSupply = 0;
+  uint allocatedEthSupply = 0;
   bool icoFailed = false;
   bool icoFulfilled = false;
 
@@ -82,6 +84,8 @@ contract DigiPulseToken {
     allocatedSupply += dgtWithBonus;
 
     // Assign new tokens to the sender and log token creation event
+    ethBalanceOf[msg.sender] += msg.value;
+    allocatedEthSupply += msg.value;
     balanceOf[msg.sender] += dgtWithBonus;
     Transfer(0, msg.sender, dgtWithBonus);
   }
@@ -99,14 +103,15 @@ contract DigiPulseToken {
   }
 
   // Decide the state of the project
-  // TODO Test
+  // TODO Test that it throws when it is too early
+  // TODO Test that it works when time has come or when goal reached
   function finalize() external {
     if (icoFailed) revert();
     if (icoFulfilled) revert();
     if (now < endOfIco && allocatedSupply != tokenSupply) revert();
 
     // Min cap is 8000 ETH
-    if (allocatedSupply / dgtRatioToEth * 1e8 < 8000 ether) {
+    if (allocatedEthSupply < 8000 ether) {
       icoFailed = true;
     } else {
       setPreSaleAmounts();
@@ -117,19 +122,17 @@ contract DigiPulseToken {
 
   // If the goal is not reached till the end of the ICO
   // allow refunds
-  // TODO Test
+  // TODO Test that it reverts() when it is too early
+  // TODO Test that it refunds when goal has not been reached
   function refundEther() external {
   	if (!icoFailed) revert();
 
-    var dgtValue = balanceOf[msg.sender];
-    if (dgtValue == 0) revert();
-    balanceOf[msg.sender] = 0;
-    allocatedSupply -= dgtValue;
+    var ethValue = ethBalanceOf[msg.sender];
+    if (ethValue == 0) revert();
+    ethBalanceOf[msg.sender] = 0;
+    allocatedEthSupply -= ethValue;
 
-    // Get the number of ether and remove bonus added from the first tier,
-    // since refund is not possible once the first tier has closed and
-    // additional decimals are added, so it matches initial amount
-    var ethValue = dgtValue / dgtRatioToEth * 1e8 / 115 * 100;
+    // Refund original Ether amount
     Refund(msg.sender, ethValue);
     if (!msg.sender.send(ethValue)) revert();
   }
@@ -137,7 +140,7 @@ contract DigiPulseToken {
   // Returns balance raised in ETH from specific address
   // TODO Test
 	function getBalanceInEth(address addr) returns(uint){
-		return ConvertLib.convert(getBalance(addr), dgtRatioToEth);
+		return ethBalanceOf[addr];
 	}
 
 	// Returns balance raised in DGT from specific address
@@ -152,10 +155,16 @@ contract DigiPulseToken {
 		return tokenSupply;
 	}
 
+  // Get raised amount during ICO
+  // TODO Test
+  function getRaised() returns(uint) {
+    return allocatedSupply;
+  }
+
 	// Get raised amount during ICO
 	// TODO Test
-	function getRaised() returns(uint) {
-		return allocatedSupply;
+	function getRaisedEth() returns(uint) {
+		return allocatedEthSupply;
 	}
 
   // Raised during Pre-sale
