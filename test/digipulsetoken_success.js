@@ -3,7 +3,7 @@ var DigiPulseToken = artifacts.require("./DigiPulseToken.sol");
 contract('DigiPulseToken', function(accounts) {
 
   // Depending on scenario which is being tested success / fail;
-  return;
+  // return;
 
   var total_raised = 0;
   var eth_amount = 0;
@@ -195,6 +195,23 @@ contract('DigiPulseToken', function(accounts) {
     }).then(function(balance) {
       var bounties = balance.toNumber();
       assert.equal(bounties, parseInt(total_raised / 98 * 2), "Bounty pool is not calculated correctly");
+    });
+  });
+
+  it("should not able to contribute once ICO failed", function() {
+    var meta;
+    var account = accounts[1];
+    var amount = 10;
+
+    return DigiPulseToken.deployed().then(function(instance) {
+      meta = instance;
+      return meta.contribute({ from: account, value: amount * 1e16 });
+
+    }).then(function(response) {
+      assert(false, "contribute() was supposed to revert()");
+
+    }).catch(function(error) {
+      // Just as expected. No more contributions accepted.
     });
   });
 });

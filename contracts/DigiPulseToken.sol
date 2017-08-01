@@ -10,13 +10,12 @@ contract DigiPulseToken {
   uint8 public constant decimals = 8;
   mapping (address => uint256) public balanceOf;
 
-
-
   // Max available supply is 16581633 * 1e8 (incl. 100000 presale and 2% bounties)
   uint constant tokenSupply = 16125000 * 1e8;
   uint8 constant dgtRatioToEth = 250;
   uint constant raisedInPresale = 961735343125;
   mapping (address => uint256) ethBalanceOf;
+  address owner;
 
   // For LIVE
   uint constant startOfIco = 1501833600; // 08/04/2017 @ 8:00am (UTC)
@@ -34,7 +33,7 @@ contract DigiPulseToken {
 
   // No special actions are required upon creation, so initialiser is left empty
   function DigiPulseToken() {
-    // Nothing here.
+    owner = msg.sender;
   }
 
   // For future transfers of DGT
@@ -51,16 +50,13 @@ contract DigiPulseToken {
 
   // logic which converts eth to dgt and stores in allocatedSupply
   // TODO check if sent more than "tokenSupply"
-  // TODO check if icoFailed
-  // TODO check if icoFulfilled
   function contribute() payable external {
     // Abort if crowdfunding has reached an end
     if (now < startOfIco) revert();
     if (now > endOfIco) revert();
-    if (icoFailed) revert();
     if (icoFulfilled) revert();
 
-    // Do not allow creating 0 or more than the available tokens.
+    // Do not allow creating 0 tokens
     if (msg.value == 0) revert();
 
     // Must adjust number of decimals, so the ratio will work as expected
@@ -164,6 +160,14 @@ contract DigiPulseToken {
 	function getRaisedEth() returns(uint) {
 		return allocatedEthSupply;
 	}
+
+  // Upon successfull ICO
+  // Allow owner to withdraw funds
+  // TODO Test
+  function withdrawFundsToOwner() {
+    if (!icoFulfilled = true) revert();
+    owner.transfer(this.balance);
+  }
 
   // Raised during Pre-sale
   // Since some of the wallets in pre-sale were on exchanges, we transfer tokens

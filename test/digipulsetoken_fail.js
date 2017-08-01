@@ -3,16 +3,16 @@ var DigiPulseToken = artifacts.require("./DigiPulseToken.sol");
 contract('DigiPulseToken', function(accounts) {
 
   // Depending on scenario which is being tested success / fail;
-  // return;
+  return;
 
   var total_raised = 0;
   var eth_amount = 0;
 
   it("should be able to send ETH and receive DGT with 10% bonus", function() {
     // Skip to future, when ICO is live
-      web3.currentProvider.sendAsync({
-        jsonrpc: "2.0", method: "evm_increaseTime", params: [86400 * 5], id: 1
-      }, function() {});
+    web3.currentProvider.sendAsync({
+      jsonrpc: "2.0", method: "evm_increaseTime", params: [86400 * 5], id: 1
+    }, function() {});
 
     var meta;
     var account = accounts[1];
@@ -163,6 +163,23 @@ contract('DigiPulseToken', function(accounts) {
       balance = balance.toNumber();
       assert.equal(balance, 0, "ETH was not transferred");
 
+    });
+  });
+
+  it("should not able to contribute once ICO failed", function() {
+    var meta;
+    var account = accounts[1];
+    var amount = 10;
+
+    return DigiPulseToken.deployed().then(function(instance) {
+      meta = instance;
+      return meta.contribute({ from: account, value: amount * 1e16 });
+
+    }).then(function(response) {
+      assert(false, "contribute() was supposed to revert()");
+
+    }).catch(function(error) {
+      // Just as expected. No more contributions accepted.
     });
   });
 });
