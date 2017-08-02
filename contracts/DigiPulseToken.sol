@@ -1,7 +1,5 @@
 pragma solidity ^0.4.4;
 
-import "./ConvertLib.sol";
-
 contract DigiPulseToken {
 
 	// Token data for ERC20
@@ -29,7 +27,7 @@ contract DigiPulseToken {
   // Generate public event that will notify clients
 	event Transfer(address indexed from, address indexed to, uint256 value);
   event Refund(address indexed _from, uint256 _value);
-  event Log(uint256 _value);
+  event Log(address _value);
 
   // No special actions are required upon creation, so initialiser is left empty
   function DigiPulseToken() {
@@ -163,10 +161,12 @@ contract DigiPulseToken {
 
   // Upon successfull ICO
   // Allow owner to withdraw funds
-  // TODO Test
-  function withdrawFundsToOwner() {
-    if (!icoFulfilled = true) revert();
-    owner.transfer(this.balance);
+  function withdrawFundsToOwner(uint256 _amount) {
+    if (!icoFulfilled) revert();
+    if (this.balance < _amount) revert();
+
+    owner.transfer(_amount);
+    allocatedEthSupply -= _amount;
   }
 
   // Raised during Pre-sale
