@@ -3,14 +3,14 @@ var DigiPulseToken = artifacts.require("./DigiPulseToken.sol");
 contract('DigiPulseToken', function(accounts) {
 
   // Depending on scenario which is being tested success / fail;
-  return;
+  // return;
 
   var total_raised = 0;
   var eth_amount = 0;
 
   it("should return 0 raised after creation of contract", function() {
     return DigiPulseToken.deployed().then(function(instance) {
-      return instance.getRaised.call();
+      return instance.totalSupply.call();
     }).then(function(balance) {
       assert.equal(balance.valueOf(), 0, "No contributions have been made yet");
     });
@@ -36,12 +36,12 @@ contract('DigiPulseToken', function(accounts) {
       meta.sendTransaction({ from: account, value: amount * 1e18 });
 
     }).then(function() {
-      return meta.getBalance.call(account);
+      return meta.balanceOf.call(account);
 
     }).then(function(balance) {
       account_ending_balance = balance.toNumber();
       assert.equal(account_ending_balance, 3793750 * 1e8, "Amount wasn't correctly calculated from the sender");
-      return meta.getBalance.call(account);
+      return meta.balanceOf.call(account);
 
     }).then(function(balance) {
       total_raised += balance.toNumber();
@@ -63,13 +63,13 @@ contract('DigiPulseToken', function(accounts) {
       meta.sendTransaction({ from: account, value: amount * 1e18 });
 
     }).then(function() {
-      return meta.getBalance.call(account);
+      return meta.balanceOf.call(account);
 
     }).then(function(balance) {
       account_ending_balance = balance.toNumber();
       assert.equal(account_ending_balance, amount * 1e8 * 250 * 1.10, "Wrong amount of DGT is listed for the address.");
       total_raised += account_ending_balance;
-      return meta.getRaised.call();
+      return meta.totalSupply.call();
 
     }).then(function(balance) {
       balance = balance.toNumber();
@@ -80,7 +80,7 @@ contract('DigiPulseToken', function(accounts) {
       account_balance = balance.toNumber();
       assert.equal(account_balance, amount * 1e18, "Wrong amount of ETH is available for the address.");
 
-      return meta.getBalance.call(account);
+      return meta.balanceOf.call(account);
     });
   });
 
@@ -109,7 +109,7 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      return meta.getRaised.call();
+      return meta.totalSupply.call();
 
     }).then(function(balance) {
       raised = balance.toNumber();
@@ -126,7 +126,7 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      return meta.getRaisedEth.call();
+      return meta.balance.call();
 
     }).then(function(balance) {
       raised = balance.toNumber();
@@ -181,13 +181,13 @@ contract('DigiPulseToken', function(accounts) {
       return meta.finalise();
 
     }).then(function(response) {
-      return meta.getBalance.call('0x8776A6fA922e65efcEa2371692FEFE4aB7c933AB');
+      return meta.balanceOf.call('0x8776A6fA922e65efcEa2371692FEFE4aB7c933AB');
 
     }).then(function(balance) {
       presale = balance.toNumber();
       total_raised += presale;
       assert.equal(presale, 961735343125, "PreSale amount was not added to the ledger");
-      return meta.getBalance.call('0x663F98e9c37B9bbA460d4d80ca48ef039eAE4052');
+      return meta.balanceOf.call('0x663F98e9c37B9bbA460d4d80ca48ef039eAE4052');
 
     }).then(function(balance) {
       var bounties = balance.toNumber();
@@ -222,19 +222,19 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      return meta.getBalance.call(account_from);
+      return meta.balanceOf.call(account_from);
 
     }).then(function(balance) {
       initialBalance = balance.toNumber();
-      meta.transfer(account_to, amountDgt * 1e8, { from: account_from });
+      meta.transferFrom(account_to, amountDgt * 1e8, { from: account_from });
 
     }).then(function() {
-      return meta.getBalance.call(account_from);
+      return meta.balanceOf.call(account_from);
 
     }).then(function(balance) {
       balance = balance.toNumber();
       assert.equal(balance, initialBalance - amountDgt * 1e8, "Balance did not reduce correctly");
-      return meta.getBalance.call(account_to);
+      return meta.balanceOf.call(account_to);
 
     }).then(function(balance) {
       var recipient_balance = balance.toNumber();
@@ -250,14 +250,14 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      return meta.getRaisedEth.call()
+      return meta.balance.call()
 
     }).then(function(balance) {
       initialBalance = balance.toNumber();
       return meta.withdrawFundsToOwner(transfer);
 
     }).then(function() {
-      return meta.getRaisedEth.call()
+      return meta.balance.call()
 
     }).then(function(balance) {
       var newBalance = balance.toNumber();

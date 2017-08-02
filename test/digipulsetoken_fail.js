@@ -26,13 +26,13 @@ contract('DigiPulseToken', function(accounts) {
       meta.sendTransaction({ from: account, value: amount * 1e18 });
 
     }).then(function() {
-      return meta.getBalance.call(account);
+      return meta.balanceOf.call(account);
 
     }).then(function(balance) {
       account_ending_balance = balance.toNumber();
       assert.equal(account_ending_balance, amount * 1e8 * 250 * 1.15, "Wrong amount of DGT is listed for the address.");
       total_raised += account_ending_balance;
-      return meta.getRaised.call();
+      return meta.totalSupply.call();
 
     }).then(function(balance) {
       balance = balance.toNumber();
@@ -44,7 +44,7 @@ contract('DigiPulseToken', function(accounts) {
       account_balance = balance.toNumber();
       assert.equal(account_balance, amount * 1e18, "Wrong amount of ETH is available for the address.");
 
-      return meta.getBalance.call(account);
+      return meta.balanceOf.call(account);
     });
   });
 
@@ -60,7 +60,8 @@ contract('DigiPulseToken', function(accounts) {
       assert(false, "finalise() was supposed to revert() but didn't");
 
     }).catch(function(error) {
-      // Revert() received;
+      // Revert() received;iter
+
     });
   });
 
@@ -94,13 +95,13 @@ contract('DigiPulseToken', function(accounts) {
       assert(false, "finalise() was not supposed to revert()");
 
     }).then(function(response) {
-      return meta.getBalance.call('0x8776A6fA922e65efcEa2371692FEFE4aB7c933AB');
+      return meta.balanceOf.call('0x8776A6fA922e65efcEa2371692FEFE4aB7c933AB');
 
     }).then(function(balance) {
       presale = balance.toNumber();
       total_raised += presale;
       assert.equal(presale, 0, "PreSale amount was added to the ledger");
-      return meta.getBalance.call('0x663F98e9c37B9bbA460d4d80ca48ef039eAE4052');
+      return meta.balanceOf.call('0x663F98e9c37B9bbA460d4d80ca48ef039eAE4052');
 
     }).then(function(balance) {
       var bounties = balance.toNumber();

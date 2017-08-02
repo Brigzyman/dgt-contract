@@ -20,14 +20,12 @@ contract DigiPulseToken {
   uint constant endOfIco = 1504223999; // 08/31/2017 @ 23:59pm (UTC)
 
   uint allocatedSupply = 0;
-  uint allocatedEthSupply = 0;
   bool icoFailed = false;
   bool icoFulfilled = false;
 
   // Generate public event that will notify clients
 	event Transfer(address indexed from, address indexed to, uint256 value);
   event Refund(address indexed _from, uint256 _value);
-  event Log(address _value);
 
   // No special actions are required upon creation, so initialiser is left empty
   function DigiPulseToken() {
@@ -35,7 +33,7 @@ contract DigiPulseToken {
   }
 
   // For future transfers of DGT
-  function transfer(address _to, uint256 _value) {
+  function transferFrom(address _to, uint256 _value) {
     require (balanceOf[msg.sender] > _value);           // Check if the sender has enough
     require (balanceOf[_to] + _value > balanceOf[_to]); // Check for overflows
 
@@ -46,7 +44,6 @@ contract DigiPulseToken {
   }
 
   // logic which converts eth to dgt and stores in allocatedSupply
-  // TODO check if sent more than "tokenSupply"
   function() payable external {
     // Abort if crowdfunding has reached an end
     require (now > startOfIco);
@@ -97,7 +94,6 @@ contract DigiPulseToken {
 
     // Assign new tokens to the sender and log token creation event
     ethBalanceOf[msg.sender] += msg.value;
-    allocatedEthSupply += msg.value;
     balanceOf[msg.sender] += dgtWithBonus;
     Transfer(0, msg.sender, dgtWithBonus);
   }
@@ -109,7 +105,7 @@ contract DigiPulseToken {
     require (now > endOfIco || allocatedSupply == tokenSupply);
 
     // Min cap is 8000 ETH
-    if (allocatedEthSupply < uint256(8000 ether)) {
+    if (this.balance < 8000 ether) {
       icoFailed = true;
     } else {
       setPreSaleAmounts();
@@ -126,7 +122,6 @@ contract DigiPulseToken {
     var ethValue = ethBalanceOf[msg.sender];
     require (ethValue != 0);
     ethBalanceOf[msg.sender] = 0;
-    allocatedEthSupply -= ethValue;
 
     // Refund original Ether amount
     msg.sender.transfer(ethValue);
@@ -138,10 +133,10 @@ contract DigiPulseToken {
 		return ethBalanceOf[addr];
 	}
 
-	// Returns balance raised in DGT from specific address
-	function getBalance(address addr) returns(uint) {
-		return balanceOf[addr];
-	}
+  // Returns balance raised in DGT from specific address
+  function balanceOf(address _owner) constant returns (uint256 balance) {
+    return balanceOf[_owner];
+  }
 
 	// Get remaining supply of DGT
 	function getRemainingSupply() returns(uint) {
@@ -149,23 +144,17 @@ contract DigiPulseToken {
 	}
 
   // Get raised amount during ICO
-  function getRaised() returns(uint) {
+  function totalSupply() returns (uint totalSupply) {
     return allocatedSupply;
   }
-
-	// Get raised amount during ICO
-	function getRaisedEth() returns(uint) {
-		return allocatedEthSupply;
-	}
 
   // Upon successfull ICO
   // Allow owner to withdraw funds
   function withdrawFundsToOwner(uint256 _amount) {
     require (icoFulfilled);
-    require (this.balance > _amount);
+    require (this.balance >= _amount);
 
     owner.transfer(_amount);
-    allocatedEthSupply -= _amount;
   }
 
   // Raised during Pre-sale
