@@ -3,7 +3,7 @@ var DigiPulseToken = artifacts.require("./DigiPulseToken.sol");
 contract('DigiPulseToken', function(accounts) {
 
   // Depending on scenario which is being tested success / fail;
-  return;
+  // return;
 
   var total_raised = 0;
   var eth_amount = 0;

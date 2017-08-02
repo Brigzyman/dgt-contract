@@ -3,7 +3,7 @@ var DigiPulseToken = artifacts.require("./DigiPulseToken.sol");
 contract('DigiPulseToken', function(accounts) {
 
   // Depending on scenario which is being tested success / fail;
-  // return;
+  return;
 
   var total_raised = 0;
   var eth_amount = 0;
@@ -126,11 +126,10 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      return meta.balance.call();
+      return web3.eth.getBalance(meta.address).toNumber();
 
     }).then(function(balance) {
-      raised = balance.toNumber();
-      assert.equal(raised, eth_amount * 1e18, "Wrong amount raised.");
+      assert.equal(balance, eth_amount * 1e18, "Wrong amount raised.");
 
     });
   });
@@ -226,19 +225,19 @@ contract('DigiPulseToken', function(accounts) {
 
     }).then(function(balance) {
       initialBalance = balance.toNumber();
-      meta.transferFrom(account_to, amountDgt * 1e8, { from: account_from });
+      meta.transferFrom(account_to, initialBalance, { from: account_from });
 
     }).then(function() {
       return meta.balanceOf.call(account_from);
 
     }).then(function(balance) {
       balance = balance.toNumber();
-      assert.equal(balance, initialBalance - amountDgt * 1e8, "Balance did not reduce correctly");
+      assert.equal(balance, 0, "Balance did not reduce correctly");
       return meta.balanceOf.call(account_to);
 
     }).then(function(balance) {
       var recipient_balance = balance.toNumber();
-      assert.equal(recipient_balance, amountDgt * 1e8, "Recipient did not receive DGT amount");
+      assert.equal(recipient_balance, initialBalance, "Recipient did not receive DGT amount");
     });
   });
 
@@ -250,17 +249,17 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      return meta.balance.call()
+      return web3.eth.getBalance(meta.address).toNumber();
 
     }).then(function(balance) {
-      initialBalance = balance.toNumber();
+      initialBalance = balance;
       return meta.withdrawFundsToOwner(transfer);
 
     }).then(function() {
-      return meta.balance.call()
+      return web3.eth.getBalance(meta.address).toNumber();
 
     }).then(function(balance) {
-      var newBalance = balance.toNumber();
+      var newBalance = balance;
       assert.equal(newBalance, initialBalance - transfer, "Raised ETH amount was not reduced");
     })
   });

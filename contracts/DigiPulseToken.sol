@@ -34,7 +34,7 @@ contract DigiPulseToken {
 
   // For future transfers of DGT
   function transferFrom(address _to, uint256 _value) {
-    require (balanceOf[msg.sender] > _value);           // Check if the sender has enough
+    require (balanceOf[msg.sender] >= _value);           // Check if the sender has enough
     require (balanceOf[_to] + _value > balanceOf[_to]); // Check for overflows
 
     balanceOf[msg.sender] -= _value;                        // Subtract from the sender
@@ -56,7 +56,7 @@ contract DigiPulseToken {
     // Must adjust number of decimals, so the ratio will work as expected
     // From ETH 16 decimals to DGT 8 decimals
     uint256 dgtAmount = msg.value / 1e10 * dgtRatioToEth;
-    require (dgtAmount < tokenSupply - allocatedSupply);
+    require (dgtAmount < (tokenSupply - allocatedSupply));
 
     // Tier bonus calculations
     uint256 dgtWithBonus;
@@ -102,7 +102,7 @@ contract DigiPulseToken {
   function finalise() external {
     require (!icoFailed);
     require (!icoFulfilled);
-    require (now > endOfIco || allocatedSupply == tokenSupply);
+    require (now > endOfIco || allocatedSupply >= tokenSupply);
 
     // Min cap is 8000 ETH
     if (this.balance < 8000 ether) {
