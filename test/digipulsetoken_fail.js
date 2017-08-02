@@ -23,7 +23,7 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      meta.contribute({ from: account, value: amount * 1e16 });
+      meta.sendTransaction({ from: account, value: amount * 1e18 });
 
     }).then(function() {
       return meta.getBalance.call(account);
@@ -42,7 +42,7 @@ contract('DigiPulseToken', function(accounts) {
 
     }).then(function(balance) {
       account_balance = balance.toNumber();
-      assert.equal(account_balance, amount * 1e16, "Wrong amount of ETH is available for the address.");
+      assert.equal(account_balance, amount * 1e18, "Wrong amount of ETH is available for the address.");
 
       return meta.getBalance.call(account);
     });
@@ -127,10 +127,10 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      return meta.contribute({ from: account, value: amount * 1e16 });
+      return meta.sendTransaction({ from: account, value: amount * 1e18 });
 
     }).then(function() {
-      assert(false, "contribute() was supposed to revert() since ICO is over");
+      assert(false, "sendTransaction() was supposed to revert() since ICO is over");
 
     }).catch(function(error) {
       // revert() received as expected
@@ -150,7 +150,7 @@ contract('DigiPulseToken', function(accounts) {
 
     }).then(function(balance) {
       balance = balance.toNumber();
-      assert.equal(balance, eth_amount * 1e16, "ETH was not present on address.");
+      assert.equal(balance, eth_amount * 1e18, "ETH was not present on address.");
       return meta.refundEther({ from: account });
 
     }).catch(function(error) {
@@ -173,7 +173,7 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      return meta.contribute({ from: account, value: amount * 1e16 });
+      return meta.sendTransaction({ from: account, value: amount * 1e18 });
 
     }).then(function(response) {
       assert(false, "contribute() was supposed to revert()");

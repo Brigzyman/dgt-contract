@@ -35,10 +35,9 @@ contract DigiPulseToken {
   }
 
   // For future transfers of DGT
-  // TODO Test
   function transfer(address _to, uint256 _value) {
-    if (balanceOf[msg.sender] < _value) revert();           // Check if the sender has enough
-    if (balanceOf[_to] + _value < balanceOf[_to]) revert(); // Check for overflows
+    require (balanceOf[msg.sender] > _value);           // Check if the sender has enough
+    require (balanceOf[_to] + _value > balanceOf[_to]); // Check for overflows
 
     balanceOf[msg.sender] -= _value;                        // Subtract from the sender
     balanceOf[_to] += _value;                               // Add the same to the recipient
@@ -48,19 +47,19 @@ contract DigiPulseToken {
 
   // logic which converts eth to dgt and stores in allocatedSupply
   // TODO check if sent more than "tokenSupply"
-  function contribute() payable external {
+  function() payable external {
     // Abort if crowdfunding has reached an end
-    if (now < startOfIco) revert();
-    if (now > endOfIco) revert();
-    if (icoFulfilled) revert();
+    require (now > startOfIco);
+    require (now < endOfIco);
+    require (!icoFulfilled);
 
     // Do not allow creating 0 tokens
-    if (msg.value == 0) revert();
+    require (msg.value != 0);
 
     // Must adjust number of decimals, so the ratio will work as expected
     // From ETH 16 decimals to DGT 8 decimals
-    uint256 dgtAmount = msg.value / 1e8 * dgtRatioToEth;
-    if (dgtAmount > tokenSupply - allocatedSupply) revert();
+    uint256 dgtAmount = msg.value / 1e10 * dgtRatioToEth;
+    require (dgtAmount < tokenSupply - allocatedSupply);
 
     // Tier bonus calculations
     uint256 dgtWithBonus;
@@ -85,10 +84,10 @@ contract DigiPulseToken {
       if (diff > 0) {
         // add bonus for current tier and strip the difference for
         // calculation in the next tier
-        dgtWithBonus += uint(int(dgtAmount) - diff) * tier_bonus / 100;
+        dgtWithBonus += (uint(int(dgtAmount) - diff) * tier_bonus / 100);
         dgtAmount = uint(diff);
       } else {
-        dgtWithBonus += dgtAmount * tier_bonus / 100;
+        dgtWithBonus += (dgtAmount * tier_bonus / 100);
         dgtAmount = 0;
       }
     }
@@ -105,12 +104,12 @@ contract DigiPulseToken {
 
   // Decide the state of the project
   function finalise() external {
-    if (icoFailed) revert();
-    if (icoFulfilled) revert();
-    if (now < endOfIco && allocatedSupply != tokenSupply) revert();
+    require (!icoFailed);
+    require (!icoFulfilled);
+    require (now > endOfIco || allocatedSupply == tokenSupply);
 
     // Min cap is 8000 ETH
-    if (allocatedEthSupply < uint256(8000 * 1e16)) {
+    if (allocatedEthSupply < uint256(8000 ether)) {
       icoFailed = true;
     } else {
       setPreSaleAmounts();
@@ -122,10 +121,10 @@ contract DigiPulseToken {
   // If the goal is not reached till the end of the ICO
   // allow refunds
   function refundEther() external {
-  	if (!icoFailed) revert();
+  	require (icoFailed);
 
     var ethValue = ethBalanceOf[msg.sender];
-    if (ethValue == 0) revert();
+    require (ethValue != 0);
     ethBalanceOf[msg.sender] = 0;
     allocatedEthSupply -= ethValue;
 
@@ -162,8 +161,8 @@ contract DigiPulseToken {
   // Upon successfull ICO
   // Allow owner to withdraw funds
   function withdrawFundsToOwner(uint256 _amount) {
-    if (!icoFulfilled) revert();
-    if (this.balance < _amount) revert();
+    require (icoFulfilled);
+    require (this.balance > _amount);
 
     owner.transfer(_amount);
     allocatedEthSupply -= _amount;

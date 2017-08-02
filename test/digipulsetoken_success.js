@@ -3,7 +3,7 @@ var DigiPulseToken = artifacts.require("./DigiPulseToken.sol");
 contract('DigiPulseToken', function(accounts) {
 
   // Depending on scenario which is being tested success / fail;
-  // return;
+  return;
 
   var total_raised = 0;
   var eth_amount = 0;
@@ -33,7 +33,7 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      meta.contribute({ from: account, value: amount * 1e16 });
+      meta.sendTransaction({ from: account, value: amount * 1e18 });
 
     }).then(function() {
       return meta.getBalance.call(account);
@@ -60,7 +60,7 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      meta.contribute({ from: account, value: amount * 1e16 });
+      meta.sendTransaction({ from: account, value: amount * 1e18 });
 
     }).then(function() {
       return meta.getBalance.call(account);
@@ -74,12 +74,11 @@ contract('DigiPulseToken', function(accounts) {
     }).then(function(balance) {
       balance = balance.toNumber();
       assert.equal(balance, total_raised, "Amount raised is not correct");
-
       return meta.getBalanceInEth.call(account);
 
     }).then(function(balance) {
       account_balance = balance.toNumber();
-      assert.equal(account_balance, amount * 1e16, "Wrong amount of ETH is available for the address.");
+      assert.equal(account_balance, amount * 1e18, "Wrong amount of ETH is available for the address.");
 
       return meta.getBalance.call(account);
     });
@@ -131,7 +130,7 @@ contract('DigiPulseToken', function(accounts) {
 
     }).then(function(balance) {
       raised = balance.toNumber();
-      assert.equal(raised, eth_amount * 1e16, "Wrong amount raised.");
+      assert.equal(raised, eth_amount * 1e18, "Wrong amount raised.");
 
     });
   });
@@ -142,7 +141,7 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      return meta.withdrawFundsToOwner(1000 * 1e16);
+      return meta.withdrawFundsToOwner(1000 * 1e18);
 
     }).then(function() {
       assert(false, "Refund did not revert()");
@@ -203,10 +202,10 @@ contract('DigiPulseToken', function(accounts) {
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
-      return meta.contribute({ from: account, value: amount * 1e16 });
+      return meta.sendTransaction({ from: account, value: amount * 1e18 });
 
     }).then(function(response) {
-      assert(false, "contribute() was supposed to revert()");
+      assert(false, "sendTransaction() was supposed to revert()");
 
     }).catch(function(error) {
       // Just as expected. No more contributions accepted.
@@ -247,7 +246,7 @@ contract('DigiPulseToken', function(accounts) {
     var meta;
     var initialBalance;
     var owner_acc = accounts[0];
-    var transfer = 1000 * 1e16;
+    var transfer = 1000 * 1e18;
 
     return DigiPulseToken.deployed().then(function(instance) {
       meta = instance;
