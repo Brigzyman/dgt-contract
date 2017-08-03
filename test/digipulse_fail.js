@@ -1,9 +1,9 @@
-var DigiPulseToken = artifacts.require("./DigiPulseToken.sol");
+var DigiPulse = artifacts.require("./DigiPulse.sol");
 
-contract('DigiPulseToken', function(accounts) {
+contract('DigiPulse', function(accounts) {
 
   // Depending on scenario which is being tested success / fail;
-  // return;
+  return;
 
   var total_raised = 0;
   var eth_amount = 0;
@@ -21,7 +21,7 @@ contract('DigiPulseToken', function(accounts) {
     var amount = 10;
     eth_amount += amount;
 
-    return DigiPulseToken.deployed().then(function(instance) {
+    return DigiPulse.deployed().then(function(instance) {
       meta = instance;
       meta.sendTransaction({ from: account, value: amount * 1e18 });
 
@@ -52,7 +52,7 @@ contract('DigiPulseToken', function(accounts) {
     var meta;
     var response;
 
-    return DigiPulseToken.deployed().then(function(instance) {
+    return DigiPulse.deployed().then(function(instance) {
       meta = instance;
       return meta.finalise();
 
@@ -70,7 +70,7 @@ contract('DigiPulseToken', function(accounts) {
     var presale;
     var account = accounts[1];
 
-    return DigiPulseToken.deployed().then(function(instance) {
+    return DigiPulse.deployed().then(function(instance) {
       meta = instance;
       return meta.refundEther();
 
@@ -86,7 +86,7 @@ contract('DigiPulseToken', function(accounts) {
     var meta;
     var presale;
 
-    return DigiPulseToken.deployed().then(function(instance) {
+    return DigiPulse.deployed().then(function(instance) {
       meta = instance;
       return meta.finalise();
 
@@ -126,7 +126,7 @@ contract('DigiPulseToken', function(accounts) {
     var account = accounts[0];
     var amount = 10;
 
-    return DigiPulseToken.deployed().then(function(instance) {
+    return DigiPulse.deployed().then(function(instance) {
       meta = instance;
       return meta.sendTransaction({ from: account, value: amount * 1e18 });
 
@@ -142,7 +142,7 @@ contract('DigiPulseToken', function(accounts) {
     var meta;
     var account = accounts[1];
 
-    return DigiPulseToken.deployed().then(function(instance) {
+    return DigiPulse.deployed().then(function(instance) {
       meta = instance;
       return meta.finalise();
 
@@ -172,7 +172,7 @@ contract('DigiPulseToken', function(accounts) {
     var account = accounts[1];
     var amount = 10;
 
-    return DigiPulseToken.deployed().then(function(instance) {
+    return DigiPulse.deployed().then(function(instance) {
       meta = instance;
       return meta.sendTransaction({ from: account, value: amount * 1e18 });
 

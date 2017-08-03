@@ -1,9 +1,9 @@
 pragma solidity ^0.4.4;
 
-contract DigiPulseToken {
+contract DigiPulse {
 
 	// Token data for ERC20
-  string public constant name = "DigiPulse Token";
+  string public constant name = "DigiPulse";
   string public constant symbol = "DGT";
   uint8 public constant decimals = 8;
   mapping (address => uint256) public balanceOf;
@@ -28,7 +28,7 @@ contract DigiPulseToken {
   event Refund(address indexed _from, uint256 _value);
 
   // No special actions are required upon creation, so initialiser is left empty
-  function DigiPulseToken() {
+  function DigiPulse() {
     owner = msg.sender;
   }
 
