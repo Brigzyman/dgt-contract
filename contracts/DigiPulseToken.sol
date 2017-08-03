@@ -33,7 +33,7 @@ contract DigiPulseToken {
   }
 
   // For future transfers of DGT
-  function transferFrom(address _to, uint256 _value) {
+  function transfer(address _to, uint256 _value) {
     require (balanceOf[msg.sender] >= _value);          // Check if the sender has enough
     require (balanceOf[_to] + _value > balanceOf[_to]); // Check for overflows
 

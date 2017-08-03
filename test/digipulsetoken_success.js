@@ -225,7 +225,7 @@ contract('DigiPulseToken', function(accounts) {
 
     }).then(function(balance) {
       initialBalance = balance.toNumber();
-      meta.transferFrom(account_to, initialBalance, { from: account_from });
+      meta.transfer(account_to, initialBalance, { from: account_from });
 
     }).then(function() {
       return meta.balanceOf.call(account_from);
