@@ -27,9 +27,9 @@ contract('DigiPulse', function(accounts) {
     var account_ending_balance;
 
     // First tier filled + 100 ETH in second tier
-    // 3275000 DGT / 250 Ratio = 13100 ETH
-    var amount = 13100 + 100;
-    eth_amount += 13100 + 100;
+    // 3750000 DGT / 250 Ratio = 15000 ETH
+    var amount = 15000 + 100;
+    eth_amount += 15000 + 100;
 
     return DigiPulse.deployed().then(function(instance) {
       meta = instance;
@@ -40,12 +40,9 @@ contract('DigiPulse', function(accounts) {
 
     }).then(function(balance) {
       account_ending_balance = balance.toNumber();
-      assert.equal(account_ending_balance, 3793750 * 1e8, "Amount wasn't correctly calculated from the sender");
-      return meta.balanceOf.call(account);
+      assert.equal(account_ending_balance, 4340000 * 1e8, "Amount wasn't correctly calculated from the sender");
+      total_raised += account_ending_balance;
 
-    }).then(function(balance) {
-      total_raised += balance.toNumber();
-      assert.equal(balance.toNumber(), 3793750 * 1e8, "Wrong amount of DGT is listed for the address.");
     });
   });
 

@@ -64,7 +64,7 @@ contract DigiPulse {
 
     for (uint8 i = 0; i < 4; i++) {
       // Each tier has same amount of DGT
-      uint256 tier_amount = 3275000 * 1e8;
+      uint256 tier_amount = 3750000 * 1e8;
       // Every next tier has 5% less bonus pool
       uint8 tier_bonus = 115 - (i * 5);
       applicable_for_tier += tier_amount;
